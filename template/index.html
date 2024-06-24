@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/assets/src/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <img src="/assets/utils/table.png" alt="nu vrea vere" class="table">
+    
+    <div class="myCards">
+      <img class="card" src="/assets/utils/cards/Kh.jpg" alt="nici cartile vere">
+    </div>  
+
+      <form class='back-end' hx-post="/add-player/" hx-swap="outterHTML">
+        <div class="login">
+          <input type="text" name="name" class="input-text"><br><br>
+          <input type="submit" value="Submit" class="submit">
+        </div>
+      </form> 
+    </div>
+    
+
+  </body>
+</html>
