@@ -1,5 +1,14 @@
 body{
   background-color: #90EE90;
+  overflow: hidden;
+}
+
+.body{
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: repeat(12, 8.3vh);
+  grid-template-columns: repeat(24, 4.1vw);
 }
 
 .table {
@@ -8,19 +17,20 @@ body{
 }
 
 .table {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  grid-area: 2 / 4 / 10 / 24; 
+  display: grid;
+  grid-template-rows: repeat(12, 8.3%);
+  grid-template-columns: repeat(24, 4.1%);
+}
+
+.buttons {
+  grid-area: 11/18/30/30;
   position: relative;
-  top: 60px;
-  right: 80px;
+  top: 35px;
 }
 
 .crf{
-  position: absolute;
-  top: 85px;
-  left:0px;
-
+  position: relative;
   width: 80px;
   height: 40px;
 
@@ -44,27 +54,24 @@ body{
 }
 
 .login {
-  height: 110vh;
+  display: grid;
+  grid-template-rows: repeat(12, 8.3vh);
+  grid-template-columns: repeat(24, 4.1vw);
+  height: 100vh;
   width: 100vw; 
-  position: relative;
-  top: -640px;
   
   backdrop-filter:blur(10px);
 }
 
 .input-text {
-  position: relative;
-   top: 250px;
-  left: 400px;
+  grid-area:6/8/15/15;
   width: 200px;
   height: 30px;
   border-radius:15px;
 }
 
 .submit {
-  position: relative;
-   top: 280px;
-  left: 455px;
+  grid-area:8/9/15/15;
   width: 70px;
   height: 30px;
   border-radius:15px;
@@ -75,3 +82,42 @@ body{
   visibility: hidden;
   position: absolute;
  }
+
+.back-end {
+  display: grid;
+  grid-template-rows: repeat(12, 8.3vh);
+  grid-template-columns: repeat(24, 4.1vw);
+  grid-area:1/1/30/30;
+}
+
+.table img {
+  width: 100%;
+  height: 100%;
+
+  grid-area:1/1/-1/-1;
+}
+
+.pl0{
+  grid-area:9/13/-1/-1;
+}
+.pl1{
+  grid-area:9/9/-1/-1;
+}
+.pl2{
+  grid-area:8/17/-1/-1;
+}
+.pl3{
+  grid-area:8/4/-1/-1;
+}
+.pl4{
+  grid-area:6/18/-1/-1;
+}
+.pl5{
+  grid-area:6/3/-1/-1;
+}
+.pl6{
+  grid-area:3/4/-1/-1;
+}
+.pl7{
+  grid-area:3/17/-1/-1;
+}

@@ -40,17 +40,19 @@ type table struct {
 }
 
 type coord struct {
-	x int
-	y int
+	x        int
+	y        int
+	off_top  int
+	off_left int
 }
 
 var coords = [8]coord{
-	{480, 350},
-	{480, 630},
-	{385, 80},
-	{270, 50},
-	{385, 915},
-	{270, 960},
+	{10, 13, -30, 0},
+	{480, 630, 0, 0},
+	{385, 80, 0, 0},
+	{270, 50, 0, 0},
+	{385, 915, 0, 0},
+	{270, 960, 0, 0},
 }
 
 var board = table{}
@@ -115,22 +117,29 @@ func shuffle() {
 	}
 }
 
-func check() {
+func check(w http.ResponseWriter, r *http.Request) {
 	act++
+	for !players[act].in_play || players[act].fold {
+		act++
+		if act == 8 {
+			act = 0
+		}
+	}
 }
 
-func fold() {
+func fold(w http.ResponseWriter, r *http.Request) {
 	players[act].fold = true
 	act++
 }
 
-func call() {
+func call(w http.ResponseWriter, r *http.Request) {
 	players[act].chips -= players[act-1].curr_bet - players[act].curr_bet
 	players[act].curr_bet = players[act-1].curr_bet
 	act++
 }
 
-func raise(bet int) {
+func raise(w http.ResponseWriter, r *http.Request) {
+	bet := 0
 	players[act].chips -= bet
 	players[act].curr_bet += bet
 }
@@ -148,20 +157,23 @@ func add_player(w http.ResponseWriter, r *http.Request) {
 		}
 		players[i].in_play = true
 		players[i].name = r.PostFormValue("name")
-		var Namestr, Butstr = "<div>", ""
+		var Namestr, Butstr = "<div>", "<div class='buttons'>"
 		for j := 0; j < 8; j++ {
 			if players[j].in_play {
-				Namestr += "<div><h3 class='player' style='position:absolute; top:" + strconv.Itoa(coords[j].x) + "px; left:" + strconv.Itoa(coords[j].y) + "px;'>%s</h3>\n"
-				Namestr += "<input class='invisible' hx-post='/check' hx-target='.back-end'  hx-swap='outterHTML' hx-trigger='every 200ms' type='text' name='id' class='input-text' value=" + strconv.Itoa(i) + "></div>\n"
+				Namestr += "<div class='pl" + strconv.Itoa(j) + "'><h3 class='player'"
+				if j == act {
+					Namestr += "style='color:blue;'"
+				}
+				Namestr += ">%s</h3></div>\n"
+				Namestr += "<input class='invisible' hx-post='/ping/' hx-target='.back-end'  hx-swap='innerHTML' hx-trigger='every 200ms' type='text' name='id' class='input-text' value=" + strconv.Itoa(i) + "></div>\n"
 
-				Butstr += "<button class='crf' class='check'>Check</button>"
-				Butstr += "<button class='crf' class='call'>Call</button>"
-				Butstr += "<button class='crf' class='raise'>Raise</button>"
+				Butstr += "<button hx-post='/check/' hx-trigger='click' class='crf' class='check'>Check</button>"
+				Butstr += "<button hx-post='/call/' hx-trigger='click' class='crf' class='call'>Call</button>"
+				Butstr += "<button hx-post='/raies/' hx-trigger='click' class='crf' class='raise'>Raise</button></div>"
 			} else {
 				Namestr += "%s\n"
 			}
 		}
-		Namestr += "</div>"
 		htmlStr := fmt.Sprintf(Namestr+Butstr, players[0].name, players[1].name, players[2].name, players[3].name, players[4].name, players[5].name, players[6].name, players[7].name)
 		tmpl, _ := template.New("t").Parse(htmlStr)
 		tmpl.Execute(w, nil)
@@ -172,12 +184,13 @@ func add_player(w http.ResponseWriter, r *http.Request) {
 }
 
 func update(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(act)
 	tr_cnt++
-	fmt.Println("hey, can i play", r.PostFormValue("id"))
+	//fmt.Println("hey, can i play", r.PostFormValue("id"))
 	var i = r.PostFormValue("id")
 	var id, _ = strconv.Atoi(i)
 	active[id] = true
-	fmt.Println("a ", wait, tr_cnt, pl_cnt)
+
 	if tr_cnt >= pl_cnt+1 {
 		tr_cnt = 0
 		wait = false
@@ -195,23 +208,27 @@ func update(w http.ResponseWriter, r *http.Request) {
 	}
 	//fmt.Println(tr_cnt, pl_cnt)
 
-	str, Butstr := "<div>", ""
+	str, Butstr := "", "<div class='buttons'>"
 	for j := 0; j < 8; j++ {
 		if players[j].in_play {
-			str += "<div><h3 class='player' style='position:absolute; top:" + strconv.Itoa(coords[j].x) + "px; left:" + strconv.Itoa(coords[j].y) + "px;'>%s</h3>\n"
+			str += "<div class='pl" + strconv.Itoa(j) + "'><h3 class='player'"
+			if j == act {
+				str += "style='color:blue;'"
+			}
+			str += ">%s</h3></div>\n"
 			if j == id {
-				str += "<input class='invisible' hx-post='/check' hx-target='.back-end'  hx-swap='outterHTML' hx-trigger='every 200ms' type='text' name='id' class='input-text' value='" + i + "'></div>\n"
-				Butstr += "<button class='crf'>Check</button>"
-				Butstr += "<button class='crf' class='call'>Call</button>"
-				Butstr += "<button class='crf' class='raise'>Raise</button>"
+				str += "<input class='invisible' hx-post='/ping/' hx-target='.back-end'  hx-swap='innerHTML' hx-trigger='every 200ms' type='text' name='id' class='input-text' value='" + i + "'></div>\n"
+
+				Butstr += "<button hx-get='/check/' hx-trigger='click' class='crf' class='check'>Check</button>"
+				Butstr += "<button hx-get='/call/' hx-trigger='click' class='crf' class='call'>Call</button>"
+				Butstr += "<button hx-post='/raies/' hx-trigger='click' class='crf' class='raise'>Raise</button></div>"
+
 			}
 		} else {
 			str += "%s\n"
 		}
 	}
-	str += "</div>"
 	str += Butstr
-	fmt.Println(str)
 	htmlStr := fmt.Sprintf(str, players[0].name, players[1].name, players[2].name, players[3].name, players[4].name, players[5].name, players[6].name, players[7].name)
 	tmpl, _ := template.New("t").Parse(htmlStr)
 	tmpl.Execute(w, nil)
@@ -239,7 +256,12 @@ func main() {
 
 	http.HandleFunc("/", loadHTML)
 	http.HandleFunc("/add-player/", add_player)
-	http.HandleFunc("/check", update)
+	http.HandleFunc("/ping/", update)
+	http.HandleFunc("/check/", check)
+	http.HandleFunc("/call/", call)
+	http.HandleFunc("/raise/", raise)
+	http.HandleFunc("/fold/", fold)
+
 	shuffle()
 
 	deal()
@@ -247,5 +269,4 @@ func main() {
 	river()
 	turn()
 	http.ListenAndServe(":8080", nil)
-
 }
